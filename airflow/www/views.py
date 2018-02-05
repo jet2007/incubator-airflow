@@ -108,6 +108,13 @@ def dag_link(v, c, m, p):
     return Markup(
         '<a href="{url}">{m.dag_id}</a>'.format(**locals()))
 
+def dag_instance_link(v, c, m, p):
+    url = url_for(
+        'airflow.graph',
+        dag_id=m.dag_id,
+        execution_date=m.execution_date.isoformat())
+    return Markup(
+        '<a href="{url}">{m.dag_id}</a>'.format(**locals()))
 
 def log_url_formatter(v, c, m, p):
     return Markup(
@@ -152,16 +159,23 @@ def state_f(v, c, m, p):
 
 def duration_f(v, c, m, p):
     if m.end_date and m.duration:
-        return timedelta(seconds=m.duration)
+        return timedelta(seconds=int(m.duration))
 
 
 def datetime_f(v, c, m, p):
     attr = getattr(m, p)
     dttm = attr.isoformat() if attr else ''
     if datetime.now().isoformat()[:4] == dttm[:4]:
-        dttm = dttm[5:]
+        #dttm = dttm[5:]
+        # 修改成展示
+        dttm = dttm[5:10]+' ' + dttm[11:19]
     return Markup("<nobr>{}</nobr>".format(dttm))
 
+# 新增加的
+def run_id_to_trigger_type(v, c, m, p):
+    attr = getattr(m, p)
+    attr = attr[:attr.find('_')]
+    return Markup("<nobr>{}</nobr>".format(attr))
 
 def nobr_f(v, c, m, p):
     return Markup("<nobr>{}</nobr>".format(getattr(m, p)))
@@ -2249,10 +2263,10 @@ class JobModelView(ModelViewOnly):
 
 
 class DagRunModelView(ModelViewOnly):
-    verbose_name_plural = "DAG Runs"
+    verbose_name_plural = "DAG Instances"
     can_edit = True
-    can_create = True
-    column_editable_list = ('state',)
+    #can_create = True
+    #column_editable_list = ('state',)
     verbose_name = "dag run"
     column_default_sort = ('execution_date', True)
     form_choices = {
@@ -2266,14 +2280,23 @@ class DagRunModelView(ModelViewOnly):
         dag_id=dict(validators=[validators.DataRequired()])
     )
     column_list = (
-        'state', 'dag_id', 'execution_date', 'run_id', 'external_trigger')
+        'state', 'dag_id', 'run_id', 'execution_date','start_date' )
     column_filters = column_list
     column_searchable_list = ('dag_id', 'state', 'run_id')
     column_formatters = dict(
         execution_date=datetime_f,
         state=state_f,
         start_date=datetime_f,
-        dag_id=dag_link)
+        dag_id=dag_instance_link,
+        run_id=run_id_to_trigger_type
+        )
+    column_labels = {
+        'state': "state",
+        'dag_id': "dag_id",
+        'execution_date': "execution_date",
+        'run_id': "trigger_type",
+        'start_date': "start_date",
+    }
 
     @action('new_delete', "Delete", "Are you sure you want to delete selected records?")
     def action_new_delete(self, ids):
@@ -2336,7 +2359,9 @@ class LogModelView(ModelViewOnly):
     column_formatters = dict(
         dttm=datetime_f, execution_date=datetime_f, dag_id=dag_link)
 
-
+#修改
+# column_formatters:dag_instance_link,duration_f
+# column_list
 class TaskInstanceModelView(ModelViewOnly):
     verbose_name_plural = "task instances"
     verbose_name = "task instance"
@@ -2345,7 +2370,7 @@ class TaskInstanceModelView(ModelViewOnly):
         'queue', 'pool', 'operator', 'start_date', 'end_date')
     named_filter_urls = True
     column_formatters = dict(
-        log_url=log_url_formatter,
+        #log_url=log_url_formatter,
         task_id=task_instance_link,
         hostname=nobr_f,
         state=state_f,
@@ -2353,7 +2378,8 @@ class TaskInstanceModelView(ModelViewOnly):
         start_date=datetime_f,
         end_date=datetime_f,
         queued_dttm=datetime_f,
-        dag_id=dag_link, duration=duration_f)
+        dag_id=dag_instance_link, 
+        duration=duration_f)
     column_searchable_list = ('dag_id', 'task_id', 'state')
     column_default_sort = ('job_id', True)
     form_choices = {
@@ -2364,10 +2390,11 @@ class TaskInstanceModelView(ModelViewOnly):
         ],
     }
     column_list = (
-        'state', 'dag_id', 'task_id', 'execution_date', 'operator',
-        'start_date', 'end_date', 'duration', 'job_id', 'hostname',
-        'unixname', 'priority_weight', 'queue', 'queued_dttm', 'try_number',
-        'pool', 'log_url')
+        'state', 'dag_id', 'task_id', 'execution_date', 
+        'start_date', 'end_date', 'duration',
+        'priority_weight','pool', 'queue', 'queued_dttm', 'try_number',
+        'hostname')
+    # 'job_id','unixname','operator', 'log_url'
     can_delete = True
     page_size = 500
 

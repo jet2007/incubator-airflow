@@ -167,11 +167,10 @@ def datetime_f(v, c, m, p):
     dttm = attr.isoformat() if attr else ''
     if datetime.now().isoformat()[:4] == dttm[:4]:
         #dttm = dttm[5:]
-        # ĞŞ¸Ä³ÉÕ¹Ê¾
+        # ä¿®æ”¹æˆå±•ç¤º
         dttm = dttm[5:10]+' ' + dttm[11:19]
     return Markup("<nobr>{}</nobr>".format(dttm))
 
-# ĞÂÔö¼ÓµÄ
 def run_id_to_trigger_type(v, c, m, p):
     attr = getattr(m, p)
     attr = attr[:attr.find('_')]
@@ -1416,9 +1415,9 @@ class Airflow(BaseView):
 
         chart_height = get_chart_height(dag)
         chart = nvd3.lineChart(
-            name="lineChart", x_is_date=True, height=chart_height, width="1200")
+            name="lineChart", x_is_date=True,x_axis_format="%Y-%m-%d", height=chart_height, width="1200")
         cum_chart = nvd3.lineChart(
-            name="cumLineChart", x_is_date=True, height=chart_height, width="1200")
+            name="cumLineChart", x_is_date=True,x_axis_format="%Y-%m-%d", height=chart_height, width="1200")
 
         y = {}
         x = {}
@@ -2246,7 +2245,7 @@ class XComView(wwwutils.SuperUserMixin, AirflowModelView):
     column_searchable_list = ('key', 'timestamp', 'execution_date', 'task_id', 'dag_id')
 
 
-class JobModelView(ModelViewOnly):
+class JobModelView(wwwutils.SuperUserMixin, ModelViewOnly):
     verbose_name_plural = "jobs"
     verbose_name = "job"
     column_display_actions = False
@@ -2291,11 +2290,8 @@ class DagRunModelView(ModelViewOnly):
         run_id=run_id_to_trigger_type
         )
     column_labels = {
-        'state': "state",
-        'dag_id': "dag_id",
-        'execution_date': "execution_date",
         'run_id': "trigger_type",
-        'start_date': "start_date",
+
     }
 
     @action('new_delete', "Delete", "Are you sure you want to delete selected records?")
@@ -2359,7 +2355,7 @@ class LogModelView(ModelViewOnly):
     column_formatters = dict(
         dttm=datetime_f, execution_date=datetime_f, dag_id=dag_link)
 
-#ĞŞ¸Ä
+#ä¿®æ”¹
 # column_formatters:dag_instance_link,duration_f
 # column_list
 class TaskInstanceModelView(ModelViewOnly):

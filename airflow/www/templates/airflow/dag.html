@@ -54,19 +54,42 @@
               Back to {{ dag.parent_dag.dag_id }}</a>
           </li>
       {% endif %}
-      <li><a href="{{ url_for("airflow.graph", dag_id=dag.dag_id, root=root) }}">
-          <span class="glyphicon glyphicon-certificate" aria-hidden="true"></span>
-        Graph View</a></li>
+      <li>
+	  
+      {% if execution_date %}
+		  <a href="{{ url_for("airflow.graph", dag_id=dag.dag_id, root=root, execution_date=execution_date) }}">
+			  <span class="glyphicon glyphicon-certificate" aria-hidden="true"></span>
+			Graph View</a>
+      {% else %}
+		  <a href="{{ url_for("airflow.graph", dag_id=dag.dag_id, root=root) }}">
+			  <span class="glyphicon glyphicon-certificate" aria-hidden="true"></span>
+			Graph View</a>
+      {% endif %}
+	  
+	  
+
+	  </li>
       <li><a href="{{ url_for("airflow.tree", dag_id=dag.dag_id, num_runs=25, root=root) }}">
           <span class="glyphicon glyphicon-tree-deciduous" aria-hidden="true"></span>
         Tree View
       </a></li>
       <li>
+	  
+      {% if execution_date %}
+        <a href="{{ url_for("airflow.gantt", dag_id=dag.dag_id, root=root, execution_date=execution_date ) }}">
+          <span class="glyphicon glyphicon-align-left" aria-hidden="true"></span>
+          <i class="icon-align-left"></i>
+          Gantt
+        </a>
+      {% else %}
         <a href="{{ url_for("airflow.gantt", dag_id=dag.dag_id, root=root) }}">
           <span class="glyphicon glyphicon-align-left" aria-hidden="true"></span>
           <i class="icon-align-left"></i>
           Gantt
         </a>
+      {% endif %}
+	  
+
       </li>
       <li><a href="{{ url_for("airflow.duration", dag_id=dag.dag_id, days=30, root=root) }}">
           <span class="glyphicon glyphicon-stats" aria-hidden="true"></span>

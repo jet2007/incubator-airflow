@@ -55,11 +55,13 @@
     <div class="square" style="background: lime;"></div>
     <div class="legend_item" style="border: none;">success</div>
     <div class="square" style="background: green;"></div>
+    <!-- 
     {% for op in operators %}
         <div class="legend_circle" style="background:{{ op.ui_color }};">
         </div>
         <div class="legend_item" style="float:left;border-color:white;">{{ op.__name__ }}</div>
     {% endfor %}
+    -->
     <div style="clear:both;"></div>
 </div>
 <hr/>
@@ -122,7 +124,7 @@ var svg = d3.select("svg")
   var num_square = base_node.instances.length;
   var extent = d3.extent(base_node.instances, function(d,i) {
     dttm = new Date(d.execution_date);
-    dttm.setHours(dttm.getHours()+7)
+
     return dttm;
   });
   var xScale = d3.time.scale()

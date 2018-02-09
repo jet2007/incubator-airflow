@@ -56,7 +56,7 @@ def create_app(config=None, testing=False):
     log_format = airflow.settings.LOG_FORMAT_WITH_PID
     airflow.settings.configure_logging(log_format=log_format)
 
-    # 重新布局菜单
+    # 閲嶆柊甯冨眬鑿滃崟
     with app.app_context():
         from airflow.www import views
 
@@ -80,8 +80,7 @@ def create_app(config=None, testing=False):
             models.Pool, Session, name="Pools", category="Admin"))
         av(vs.ConfigurationView(
             name='Configuration', category="Admin"))
-        av(vs.UserModelView(
-            models.User, Session, name="Users", category="Admin"))
+        #av(vs.UserModelView( models.User, Session, name="Users", category="Admin"))
         av(vs.ConnectionModelView(
             models.Connection, Session, name="Connections", category="Admin"))
         av(vs.VariableView(

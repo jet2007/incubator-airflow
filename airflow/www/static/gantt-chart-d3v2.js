@@ -30,13 +30,19 @@ d3.gantt = function() {
     .attr('class', 'd3-tip')
     .offset([-10, 0])
     .html(function(d) {
+      
+      if (d.duration.indexOf('.') > 0 )
+          duration_format=d.duration.substr(0,d.duration.indexOf('.'));
+      else 
+          duration_format=d.duration
+      
       var s = ""
       s += "<div class='row'>";
       s += "<div class='col-md-3'>start:<br/>end:<br/>duration:</div>"
       s += "<div class='col-md-9'><span style='color: #AAA'> "
       s += d.isoStart + "<br/>";
       s += d.isoEnd + "<br/>";
-      s += d.duration + "<br/>";
+      s += duration_format + "<br/>";
       s += "</span></div>";
       s += "</div>";
       return s;

@@ -251,16 +251,39 @@ function update(source) {
       .style("stroke-opacity", function(d) {return d.external_trigger ? "0": "1"})
       .attr("title", function(d){
         s =  "Task_id: " + d.task_id + "<br>";
+        
+        if(d.task_id === undefined){
+          s =  "";
+        }
+        else
+            s =  "Task_id: " + d.task_id + "<br>";
+
         s += "Run: " + d.execution_date + "<br>";
         if(d.run_id != undefined){
           s += "run_id: <nobr>" + d.run_id + "</nobr><br>";
         }
-        s += "Operator: " + d.operator + "<br>"
+
+        if(d.operator === undefined){
+          s += ""
+        }
+        else
+            s += "Operator: " + d.operator + "<br>"
+
+        
         if(d.start_date != undefined){
-          s += "Started: " + d.start_date + "<br>";
-          s += "Ended: " + d.end_date + "<br>";
-          s += "Duration: " + d.duration + "<br>";
-          s += "State: " + d.state + "<br>";
+            s += "Started: " + d.start_date + "<br>";
+            if(d.end_date === null){
+              s += ""
+            }
+            else
+              s += "Ended: " + d.end_date + "<br>";
+              
+            if(d.duration === undefined){
+              s += ""
+            }
+            else
+                s += "Duration(m): " + parseInt(d.duration/60) + "<br>";
+            s += "State: " + d.state + "<br>";
         }
         return s;
       })

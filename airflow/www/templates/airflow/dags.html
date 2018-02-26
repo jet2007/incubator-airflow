@@ -33,10 +33,10 @@
         <thead>
             <tr>
                 <th width="12"><span id="pause_header"class="glyphicon glyphicon-info-sign" title="Use this toggle to pause a DAG. The scheduler won't schedule new tasks instances for a paused DAG. Tasks already running at pause time won't be affected."></span></th>
-                <th>DAG</th>
+                <th>Dag</th>
                 <th>Owner</th>
                 <th>Schedule</th>
-                <th style="padding-left: 5px;">DAG Runs
+                <th style="padding-left: 5px;">Dag Runs
                   <span id="statuses_info" class="glyphicon glyphicon-info-sign" aria-hidden="true" title="Status of all previous DAG runs."></span>
                   <img id="loading" width="15" src="{{ url_for("static", filename="loading.gif") }}">
                 </th>
@@ -46,7 +46,9 @@
                 </th>
                 <th style="padding-left: 5px;">Last Run <span id="statuses_info" class="glyphicon glyphicon-info-sign" aria-hidden="true" title="Execution Date/Time of Highest Dag Run."></span>
                 </th>
-
+                
+                <th style="padding-left: 5px;">Durations</th> 
+                
                 <th style="padding-left: 5px;">Next Run <span id="statuses_info" class="glyphicon glyphicon-info-sign" aria-hidden="true" title="Execution Date/Time of Next Dag Run."></span>
                 </th>
 
@@ -115,12 +117,30 @@
                        <a href="{{ url_for('airflow.graph', dag_id=dag.dag_id, execution_date=last_run.execution_date) }}">
                           {{ last_run.execution_date.strftime("%Y-%m-%d %H:%M") }}
                           </a>
-                       <span aria-hidden="true" id="statuses_info" title="Start Date: {{ last_run.start_date.strftime("%Y-%m-%d %H:%M") }}" class="glyphicon glyphicon-info-sign"/>
+                       <span aria-hidden="true" id="statuses_info" title="  Trigger Date: {{ last_run.start_date.strftime("%Y-%m-%d %H:%M") }}" class="glyphicon glyphicon-info-sign"/>
                      {% endif %}
                   {% endif %}
                 </td>
 
-
+                <!-- Column 8.4: Durations -->
+                <td class="text-nowrap  {{ dag.dag_id }}">
+                {% if dag_id in orm_dags %}
+                    {% if not orm_dags[dag_id].is_paused %}
+                          {% if dag %}
+                            {% set last_run = dag.get_last_dagrun() %}
+                              {% if last_run and last_run.start_date  %}
+                                    {% if last_run.end_date  %}
+                                      {{ (last_run.end_date-last_run.start_date).seconds//60 }} Min
+                                    {% else %}
+                                      {{ (nowtime-last_run.start_date).seconds//60 }} Min
+                                    {% endif %}
+                             {% endif %}
+                          {% endif %}
+                    {% else %}
+                      
+                    {% endif %}
+                {% endif %}
+                
 
                 <!-- Column 8.5: Next Run -->
                 <td class="text-nowrap  {{ dag.dag_id }}">

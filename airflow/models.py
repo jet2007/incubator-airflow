@@ -4244,18 +4244,21 @@ class DagRun(Base):
                     any(r.state in (State.FAILED, State.UPSTREAM_FAILED) for r in roots)):
                 logging.info('Marking run {} failed'.format(self))
                 self.state = State.FAILED
+                self.end_date = datetime.now()
 
             # if all roots succeeded and no unfinished tasks, the run succeeded
             elif not unfinished_tasks and all(r.state in (State.SUCCESS, State.SKIPPED)
                                               for r in roots):
                 logging.info('Marking run {} successful'.format(self))
                 self.state = State.SUCCESS
+                self.end_date = datetime.now()
 
             # if *all tasks* are deadlocked, the run failed
             elif unfinished_tasks and none_depends_on_past and no_dependencies_met:
                 logging.info(
                     'Deadlock; marking run {} failed'.format(self))
                 self.state = State.FAILED
+                self.end_date = datetime.now()
 
             # finally, if the roots aren't done, the dag is still running
             else:

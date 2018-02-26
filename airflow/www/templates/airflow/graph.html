@@ -282,7 +282,7 @@
               tt += "Operator: " + task.task_type + "<br>";
               tt += "Started: " + ti.start_date + "<br>";
               tt += "Ended: " + ti.end_date + "<br>";
-              tt += "Duration: " + ti.duration + "<br>";
+              tt += "Duration(m): " + parseInt( ti.duration /60)  + "<br>";
               tt += "State: " + ti.state + "<br>";
               return tt;
             });

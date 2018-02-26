@@ -33,7 +33,7 @@
     $("#clock").clock({
         "seconds":"false",
         "calendar":"false",
-        "format":"24",
+        "format":"h-i",
         "timestamp":UTCseconds
     }).click(function(){
         alert('{{ hostname }}');
@@ -77,6 +77,11 @@
         {% endblock %}
         <!-- clock and logout -->
         <ul class="nav navbar-nav navbar-right">
+            {% if  current_user.user  %}
+                {% if  current_user.user.username  %}
+                  <li><a href="#"><span data-toggle="tooltip" data-placement="left" >[{{ current_user.user.username }}]</span></a></li>
+                {% endif %}
+            {% endif %}
             <li><a id="clock"></a></li>
             {% if current_user.is_authenticated %}
               <li><a href="{{ url_for('airflow.logout') }}"><span data-toggle="tooltip" data-placement="left" title="Logout" class="glyphicon glyphicon-off"></span></a></li>

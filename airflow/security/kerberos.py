@@ -27,18 +27,24 @@ NEED_KRB181_WORKAROUND = None
 log = LoggingMixin().log
 
 
-def renew_from_kt():
+def renew_from_kt(principal, keytab):
     # The config is specified in seconds. But we ask for that same amount in
     # minutes to give ourselves a large renewal buffer.
-    renewal_lifetime = "%sm" % configuration.getint('kerberos', 'reinit_frequency')
-    principal = configuration.get('kerberos', 'principal').replace("_HOST", socket.getfqdn())
 
-    cmdv = [configuration.get('kerberos', 'kinit_path'),
-            "-r", renewal_lifetime,
-            "-k",  # host ticket
-            "-t", configuration.get('kerberos', 'keytab'),  # specify keytab
-            "-c", configuration.get('kerberos', 'ccache'),  # specify credentials cache
-            principal]
+    renewal_lifetime = "%sm" % configuration.conf.getint('kerberos', 'reinit_frequency')
+
+    cmd_principal = principal or configuration.conf.get('kerberos', 'principal').replace(
+        "_HOST", socket.getfqdn()
+    )
+
+    cmdv = [
+        configuration.conf.get('kerberos', 'kinit_path'),
+        "-r", renewal_lifetime,
+        "-k",  # host ticket
+        "-t", keytab,  # specify keytab
+        "-c", configuration.conf.get('kerberos', 'ccache'),  # specify credentials cache
+        cmd_principal
+    ]
     log.info("Reinitting kerberos from keytab: " + " ".join(cmdv))
 
     subp = subprocess.Popen(cmdv,
@@ -62,12 +68,12 @@ def renew_from_kt():
         # (From: HUE-640). Kerberos clock have seconds level granularity. Make sure we
         # renew the ticket after the initial valid time.
         time.sleep(1.5)
-        perform_krb181_workaround()
+        perform_krb181_workaround(principal)
 
 
-def perform_krb181_workaround():
-    cmdv = [configuration.get('kerberos', 'kinit_path'),
-            "-c", configuration.get('kerberos', 'ccache'),
+def perform_krb181_workaround(principal):
+    cmdv = [configuration.conf.get('kerberos', 'kinit_path'),
+            "-c", configuration.conf.get('kerberos', 'ccache'),
             "-R"]  # Renew ticket_cache
 
     log.info("Renewing kerberos ticket to work around kerberos 1.8.1: " +
@@ -76,9 +82,10 @@ def perform_krb181_workaround():
     ret = subprocess.call(cmdv, close_fds=True)
 
     if ret != 0:
-        principal = "%s/%s" % (configuration.get('kerberos', 'principal'), socket.getfqdn())
+        principal = "%s/%s" % (principal or configuration.conf.get('kerberos', 'principal'),
+                               socket.getfqdn())
         fmt_dict = dict(princ=principal,
-                        ccache=configuration.get('kerberos', 'principal'))
+                        ccache=configuration.conf.get('kerberos', 'principal'))
         log.error("Couldn't renew kerberos ticket in order to work around "
                   "Kerberos 1.8.1 issue. Please check that the ticket for "
                   "'%(princ)s' is still renewable:\n"
@@ -96,18 +103,18 @@ def detect_conf_var():
     Sun Java Krb5LoginModule in Java6, so we need to take an action to work
     around it.
     """
-    ticket_cache = configuration.get('kerberos', 'ccache')
+    ticket_cache = configuration.conf.get('kerberos', 'ccache')
 
     with open(ticket_cache, 'rb') as f:
         # Note: this file is binary, so we check against a bytearray.
         return b'X-CACHECONF:' in f.read()
 
 
-def run():
-    if configuration.get('kerberos', 'keytab') is None:
+def run(principal, keytab):
+    if not keytab:
         log.debug("Keytab renewer not starting, no keytab configured")
         sys.exit(0)
 
     while True:
-        renew_from_kt()
-        time.sleep(configuration.getint('kerberos', 'reinit_frequency'))
+        renew_from_kt(principal, keytab)
+        time.sleep(configuration.conf.getint('kerberos', 'reinit_frequency'))
